@@ -302,9 +302,10 @@ impl<'a> UDSClient<'a> {
     /// 0x31 - Routine Control. The `routine_control_type` selects the operation such as Start and Stop, see [`constants::RoutineControlType`]. The `routine_identifier` is a 16-bit identifier for the routine. The `data` parameter is optional and can be used when starting or stopping a routine. The ECU can optionally return data for all routine operations.
     pub async fn routine_control(
         &self,
-        routine_control_type: constants::RoutineControlType,
+        routine_control_type: Option<constants::RoutineControlType>,
         routine_identifier: u16,
         data: Option<&[u8]>,
+        check_response_id: bool,
     ) -> Result<Option<Vec<u8>>> {
         let mut buf: Vec<u8> = vec![];
         buf.extend(routine_identifier.to_be_bytes());
@@ -312,10 +313,15 @@ impl<'a> UDSClient<'a> {
             buf.extend(data);
         }
 
+        let routine_control_type = match routine_control_type {
+            Some(routine_control_type) => Some(routine_control_type as u8),
+            None => None
+        };
+
         let resp = self
             .request(
                 ServiceIdentifier::RoutineControl as u8,
-                Some(routine_control_type as u8),
+                routine_control_type,
                 Some(&buf),
             )
             .await?;
@@ -325,7 +331,7 @@ impl<'a> UDSClient<'a> {
         }
 
         let id = u16::from_be_bytes([resp[0], resp[1]]);
-        if id != routine_identifier {
+        if id != routine_identifier && check_response_id {
             return Err(Error::InvalidDataIdentifier(id).into());
         }
 
