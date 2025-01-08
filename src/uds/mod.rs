@@ -303,12 +303,16 @@ impl<'a> UDSClient<'a> {
     pub async fn routine_control(
         &self,
         routine_control_type: Option<constants::RoutineControlType>,
-        routine_identifier: u16,
+        routine_identifier: Option<u16>,
         data: Option<&[u8]>,
         check_response_id: bool,
     ) -> Result<Option<Vec<u8>>> {
         let mut buf: Vec<u8> = vec![];
-        buf.extend(routine_identifier.to_be_bytes());
+
+        if let Some(routine_identifier) = routine_identifier {
+            buf.extend(routine_identifier.to_be_bytes());
+        }
+
         if let Some(data) = data {
             buf.extend(data);
         }
@@ -331,7 +335,10 @@ impl<'a> UDSClient<'a> {
         }
 
         let id = u16::from_be_bytes([resp[0], resp[1]]);
-        if id != routine_identifier && check_response_id {
+        if check_response_id &&
+           routine_identifier.is_some() &&
+           id != routine_identifier.unwrap()
+        {
             return Err(Error::InvalidDataIdentifier(id).into());
         }
 
