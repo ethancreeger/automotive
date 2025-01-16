@@ -14,6 +14,8 @@ pub enum Error {
     Timeout,
     #[error("Disconnected")]
     Disconnected,
+    #[error("Adapter Internal")]
+    AdapterInternal,
 
     #[error(transparent)]
     IsoTPError(#[from] crate::isotp::Error),

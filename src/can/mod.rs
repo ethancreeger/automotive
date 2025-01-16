@@ -125,8 +125,10 @@ impl fmt::Debug for Frame {
 
 /// Trait for a Blocking CAN Adapter
 pub trait CanAdapter {
-    fn send(&mut self, frames: &mut VecDeque<crate::can::Frame>) -> crate::Result<()>;
+    fn baud_rate(&mut self, baud_rate: u16) -> crate::Result<()>;
+    fn power(&mut self, on: bool) -> crate::Result<()>;
     fn recv(&mut self) -> crate::Result<Vec<Frame>>;
+    fn send(&mut self, frames: &mut VecDeque<crate::can::Frame>) -> crate::Result<()>;
 }
 
 #[cfg(test)]

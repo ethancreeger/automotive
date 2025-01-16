@@ -81,6 +81,14 @@ impl SocketCan {
 }
 
 impl CanAdapter for SocketCan {
+    fn baud_rate(&mut self, _baud_rate: u16) -> Result<()> {
+        Err(crate::error::Error::NotSupported)
+    }
+
+    fn power(&mut self, _on: bool) -> Result<()> {
+        Err(crate::error::Error::NotSupported)
+    }
+
     fn send(&mut self, frames: &mut VecDeque<Frame>) -> Result<()> {
         while let Some(frame) = frames.pop_front() {
             if self.socket.write_frame(&frame).is_err() {
